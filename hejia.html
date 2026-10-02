@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>何家 · 恨海情天</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+:root{
+  --bg:#1a1410;
+  --card:#0f0c09;
+  --line:#8a6a42;
+  --gold:#e8c48a;
+  --gold-dim:#a08c70;
+  --text:#e0d6c8;
+  --text-dim:#b8a888;
+  --red:#8a2a2a;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Noto Serif SC","PingFang SC","Microsoft YaHei",serif;
+  margin:0;
+  padding:10px;
+  display:flex;
+  justify-content:center;
+}
+.c{
+  width:100%;
+  max-width:680px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:20px;
+  box-shadow:0 0 40px rgba(138,106,66,.18), inset 0 0 60px rgba(0,0,0,.5);
+  box-sizing:border-box;
+}
+.title{
+  text-align:center;
+  color:var(--gold);
+  font-size:18px;
+  letter-spacing:6px;
+  margin-bottom:18px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--line);
+}
+.status-row{
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.status-box{
+  flex:1;
+  min-width:140px;
+  background:#15110d;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:10px 12px;
+  font-size:12px;
+  color:var(--gold-dim);
+  line-height:1.7;
+}
+.status-box .name{
+  color:var(--gold);
+  font-size:13px;
+  font-weight:600;
+  display:block;
+  margin-bottom:6px;
+  border-bottom:1px dashed var(--line);
+  padding-bottom:4px;
+}
+#story{
+  line-height:2;
+  white-space:pre-wrap;
+  margin-bottom:16px;
+  font-size:15px;
+  color:var(--text);
+}
+.speak-block{
+  margin:14px 0 18px 0;
+  padding-left:14px;
+  border-left:2px solid var(--line);
+}
+.speak-name{
+  color:var(--gold);
+  font-weight:600;
+  font-size:15px;
+  margin-bottom:4px;
+}
+.speak-line{
+  color:var(--text);
+  font-size:15px;
+  line-height:1.8;
+}
+.speak-line em{
+  color:var(--gold-dim);
+  font-style:normal;
+}
+.speak-heart{
+  color:var(--gold-dim);
+  font-size:13px;
+  font-style:italic;
+  margin-top:6px;
+  padding-left:10px;
+  border-left:1px dashed var(--line);
+  line-height:1.7;
+}
+#phone,#news{
+  background:#15110d;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:14px;
+  margin:12px 0;
+  font-size:13px;
+  white-space:pre-wrap;
+  display:none;
+  line-height:1.8;
+}
+#phone{color:var(--text-dim)}
+#news{color:var(--text-dim)}
+.sec-title{
+  color:var(--gold);
+  font-size:12px;
+  margin-bottom:10px;
+  letter-spacing:3px;
+  border-bottom:1px dashed var(--line);
+  padding-bottom:6px;
+}
+button{
+  display:block;
+  width:100%;
+  margin:8px 0;
+  padding:12px 14px;
+  background:#15110d;
+  border:1px solid var(--line);
+  border-radius:4px;
+  color:var(--gold);
+  font-size:14px;
+  cursor:pointer;
+  text-align:left;
+  transition:.25s;
+  font-family:inherit;
+}
+button:hover{
+  background:#221a12;
+  border-color:var(--gold);
+  box-shadow:0 0 12px rgba(232,196,138,.2);
+}
+.input-row{
+  margin-top:14px;
+  display:flex;
+  gap:8px;
+}
+#myInput{
+  flex:1;
+  padding:12px;
+  background:#15110d;
+  border:1px solid var(--line);
+  border-radius:4px;
+  color:var(--text);
+  font-size:14px;
+  font-family:inherit;
+}
+#myInput::placeholder{color:#6a5a48}
+.code-block{
+  background:#0a0806;
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:12px;
+  margin-top:14px;
+  font-family:"Courier New",monospace;
+  font-size:12px;
+  color:var(--gold-dim);
+  white-space:pre-wrap;
+  line-height:1.7;
+  display:none;
+}
+</style>
+</head>
+<body>
+<div class="c">
+  <div class="title">何 家 · 恨 海 情 天</div>
+  <div class="status-row" id="statusRow"></div>
+  <div id="story">正在连接…</div>
+  <div id="news"></div>
+  <div id="phone"></div>
+  <div id="options"></div>
+  <div id="codeBlock" class="code-block"></div>
+  <div class="input-row">
+    <input id="myInput" type="text" placeholder="输入你的行动，或说「看手机」「看新闻」…" onkeydown="if(event.key==='Enter')sendMine()">
+    <button style="width:auto;margin:0;padding:0 18px" onclick="sendMine()">发送</button>
+  </div>
+</div>
+<script>const API_KEY = "sk-7260a888b3244e85924477e5f5e1327e";
+const API_URL = "https://api.deepseek.com/chat/completions";
+const MODEL = "deepseek-reasoner";
+
+const 人设规则 = `
+你在扮演何家三子及何家其他NPC，推进一档港风豪门剧情。玩家扮演金隅佟（Yuki），21岁，港大大四，INTJ，天蝎座，深棕色长卷发，鹅蛋脸，杏眼，卧蚕，酒窝，婴儿肥，外冷内热，庙街出身母亲托孤给何鸿谦的故人之女，名义养女。
+
+【何家三子人设】
+大哥何瑞璋 Dominic，33岁，190cm，INTJ，天秤座，10月15日。何家掌权人，头狼，外冷内狠，话少语速慢，粤语不带语气词，不用俚语。穿黑灰海军蓝定制西装，左食指家族勋章红宝石戒指，左眼卧蚕下有淡色小痣。喝单一麦芽威士忌，听巴赫，有失眠毛病。对家人护短到底，对外丛林法则。爱情观：婚姻是政治安排，情妇是消遣，妻子必须门当户对。极度自傲，好感度极难上升。
+
+二哥何瑞珩 Adrian，28岁，185cm，ESFP，金牛座，5月20日。何家娱乐板块掌权人，笑面虎，社交门面，亲和力强，话多嘴碎，粤语带懒音，喜欢英文穿插。穿浅灰米白驼色羊绒，百达翡丽，何家印章戒指。信爱情存在但不重要，新鲜感驱动，动心快厌倦也快，分手温和干脆。对家里多出来的金隅佟表面友善，实则计算。
+
+三哥何瑞延 Julian，26岁，188cm，ENTJ，狮子座，7月30日。何家暗面生意负责人，赌场夜总会航运，花名三条A。傲慢刻薄，说话难听，粤语咬字硬，语速不快，带港腔。穿黑深灰丝质衬衫，小指衔尾蛇尾戒，唇角下方有小痣。不谈爱只做交易，不碰处女，不接吻或很少接吻。对金隅佟审视，等着看她爬谁的床。
+
+【其他NPC】
+大姐何瑞仪：温婉面孔雷霆手段。
+父亲何鸿谦：庙街出身一代枭雄，私生子事件后退居二线。
+私生子女、情妇、马场、游艇会、酒庄等背景人物按需出现。
+
+【粤语规则】
+角色说粤语时，格式：呢間我由細食到大，好新鮮㗎。（这家我从小吃到大，很新鲜的。）
+普通话直接输出，不加翻译。只有粤语才加括号翻译。
+
+【输出格式（强制）】
+每次回复必须按以下结构，缺一不可：
+
+一、每个说话的角色，单独成块，格式为：
+**角色名**
+> 粤语内容（普通话翻译）
+\`心理想法\`
+
+注意：角色名必须用 **粗体**。台词行必须以 > 开头。心声行必须用反引号包裹，且只写这个角色此刻的心理。
+
+二、所有角色说完后，输出状态代码块，用三个反引号包裹，格式：
+剧情地点：
+具体日期：
+心情：
+何瑞璋 好感度： / 爱意：
+何瑞珩 好感度： / 爱意：
+何瑞延 好感度： / 爱意：
+何瑞仪 好感度：
+愤怒：
+性欲：
+理智：
+愉悦：
+恐惧：
+占有欲：
+嫉妒：
+杀意：
+
+三、最后给4个选项，格式 A. / B. / C. / D.。
+
+【禁止】
+- 禁止小说化、上帝视角
+- 禁止用"她"指代玩家，玩家自称"我"
+- 禁止默认其他角色知道不在场的信息
+- 禁止好感度膨胀
+- 禁止把心声堆在最后，心声必须紧跟对应角色的台词
+
+【当前场景】
+何家每月一次的固定大家宴，何家四姐弟已就坐，玩家跟在何鸿谦后面入场。
+`;
+
+let history = [{role:"system", content:人设规则}];
+
+async function ask(userText){
+  history.push({role:"user", content:userText});
+  const res = await fetch(API_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+API_KEY},
+    body:JSON.stringify({model:MODEL, messages:history})
+  });
+  const data = await res.json();
+  const reply = data.choices[0].message.content;
+  history.push({role:"assistant", content:reply});
+  render(reply);
+}
+
+function render(text){
+  const lines = text.split("\n");
+  let storyHTML="", opts=[], code="";
+  let phone="", news="";
+  let inCode=false;
+  let currentName=null, currentLine=null, currentHeart=null;
+
+  function flushSpeak(){
+    if(currentName){
+      let block='<div class="speak-block">';
+      block+='<div class="speak-name">'+currentName+'</div>';
+      if(currentLine){
+        block+='<div class="speak-line">'+currentLine.replace(/^>\s*/,'').replace(/（/g,'<em>（').replace(/）/g,'）</em>')+'</div>';
+      }
+      if(currentHeart){
+        block+='<div class="speak-heart">'+currentHeart+'</div>';
+      }
+      block+='</div>';
+      storyHTML+=block;
+    }
+    currentName=null;currentLine=null;currentHeart=null;
+  }
+
+  for(const raw of lines){
+    const line=raw.trim();
+    if(line.includes("\`\`\`")){inCode=!inCode; continue;}
+    if(inCode){code+=line+"\n"; continue;}
+    if(line.startsWith("**") && line.endsWith("**") && line.length<20){
+      flushSpeak();
+      currentName=line.replace(/\*\*/g,'');
+      continue;
+    }
+    if(line.startsWith(">")){
+      currentLine=line;
+      continue;
+    }
+    if(line.startsWith("\`") && line.endsWith("\`")){
+      currentHeart=line.replace(/\`/g,'');
+      continue;
+    }
+    if(/^[A-D][\.、]/.test(line)){
+      flushSpeak();
+      opts.push(line);
+      continue;
+    }
+    if(line.includes("剧情地点")||line.includes("具体日期")||line.includes("好感度")){
+      flushSpeak();
+      code+=line+"\n";
+      continue;
+    }
+    if(line.includes("【手机")||line.includes("聊天记录")){
+      flushSpeak();
+      phone+=line+"\n";
+      continue;
+    }
+    if(line.includes("【新闻")||line.includes("城市新闻")){
+      flushSpeak();
+      news+=line+"\n";
+      continue;
+    }
+    if(line){storyHTML+=line+"\n";}
+  }
+  flushSpeak();
+
+  document.getElementById("story").innerHTML=storyHTML || "（等待剧情）";
+
+  const codeEl=document.getElementById("codeBlock");
+  if(code.trim()){
+    codeEl.textContent=code;
+    codeEl.style.display="block";
+    renderStatus(code);
+  } else {
+    codeEl.style.display="none";
+    document.getElementById("statusRow").innerHTML="";
+  }
+
+  const phoneEl=document.getElementById("phone");
+  if(phone){phoneEl.innerHTML='<div class="sec-title">手 机</div>'+phone;phoneEl.style.display="block";}
+  else{phoneEl.style.display="none";}
+
+  const newsEl=document.getElementById("news");
+  if(news){newsEl.innerHTML='<div class="sec-title">新 闻</div>'+news;newsEl.style.display="block";}
+  else{newsEl.style.display="none";}
+
+  const box=document.getElementById("options");
+  box.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("button");
+    b.textContent=o;
+    b.onclick=()=>ask("我选择："+o);
+    box.appendChild(b);
+  });
+}
+
+function renderStatus(code){
+  const row=document.getElementById("statusRow");
+  const map={
+    "何瑞璋":{name:"何瑞璋",lines:[]},
+    "何瑞珩":{name:"何瑞珩",lines:[]},
+    "何瑞延":{name:"何瑞延",lines:[]},
+    "何瑞仪":{name:"何瑞仪",lines:[]},
+    "其他":{name:"其 他",lines:[]}
+  };
+  code.split("\n").forEach(l=>{
+    if(l.includes("何瑞璋")) map["何瑞璋"].lines.push(l);
+    else if(l.includes("何瑞珩")) map["何瑞珩"].lines.push(l);
+    else if(l.includes("何瑞延")) map["何瑞延"].lines.push(l);
+    els
