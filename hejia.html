@@ -187,6 +187,15 @@ button:hover{
   <button style="margin-top:10px" onclick="startGame()">开始</button>
   <button style="margin-top:10px;margin-left:8px" onclick="if(confirm('确定重开？当前进度会清掉')){localStorage.removeItem('hejia_history');location.reload();}">重开</button>
 </div>
+
+<div id="story">正在连接…</div>
+<div id="news"></div>
+<div id="phone"></div>
+<div id="options"></div>
+<div id="codeBlock" class="code-block"></div>
+<div class="input-row">
+  <input id="myInput" type="text" placeholder="输入你的行动，或说「看手机」「看新闻」…" onkeydown="if(event.key==='Enter')sendMine()">
+  <button style="width:auto;margin:0;padding:0 18px" onclick="sendMine()">发送</button>
 </div>
   <div id="story">正在连接…</div>
   <div id="news"></div>
