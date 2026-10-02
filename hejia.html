@@ -181,6 +181,11 @@ button:hover{
 <div class="c">
   <div class="title">何 家 · 恨 海 情 天</div>
   <div class="status-row" id="statusRow"></div>
+  <div id="keyBox" style="background:#15110d;border:1px solid #8a6a42;border-radius:4px;padding:14px;margin-bottom:14px">
+  <div style="color:#e8c48a;font-size:13px;margin-bottom:8px">请填入你的 API 密钥（只存在本次浏览器，不会上传）</div>
+  <input id="keyInput" type="password" placeholder="sk-..." style="width:100%;padding:10px;background:#0f0c09;border:1px solid #8a6a42;border-radius:4px;color:#e0d6c8;font-size:14px;box-sizing:border-box">
+  <button style="margin-top:10px" onclick="startGame()">开始</button>
+</div>
   <div id="story">正在连接…</div>
   <div id="news"></div>
   <div id="phone"></div>
@@ -191,7 +196,8 @@ button:hover{
     <button style="width:auto;margin:0;padding:0 18px" onclick="sendMine()">发送</button>
   </div>
 </div>
-<script>const API_KEY = "sk-7260a888b3244e85924477e5f5e1327e";
+<script>
+let API_KEY = "";
 const API_URL = "https://api.deepseek.com/chat/completions";
 const MODEL = "deepseek-reasoner";
 
@@ -376,4 +382,32 @@ function renderStatus(code){
     if(l.includes("何瑞璋")) map["何瑞璋"].lines.push(l);
     else if(l.includes("何瑞珩")) map["何瑞珩"].lines.push(l);
     else if(l.includes("何瑞延")) map["何瑞延"].lines.push(l);
-    els
+    else if(l.includes("何瑞仪")) map["何瑞仪"].lines.push(l);
+    else if(l.trim()) map["其他"].lines.push(l);
+  });
+  let html="";
+  Object.values(map).forEach(m=>{
+    if(m.lines.length===0) return;
+    html+='<div class="status-box"><span class="name">'+m.name+'</span>'+m.lines.join("<br>")+'</div>';
+  });
+  row.innerHTML=html;
+}
+
+function sendMine(){
+  const el=document.getElementById("myInput");
+  const v=el.value.trim();
+  if(!v) return;
+  el.value="";
+  ask("我的行动："+v);
+}
+
+function startGame(){
+  const k=document.getElementById("keyInput").value.trim();
+  if(!k){ alert("请先填密钥"); return; }
+  API_KEY=k;
+  document.getElementById("keyBox").style.display="none";
+  ask("确认开始。生成大家宴入场场景，我（金隅佟）跟在何鸿谦后面入场。");
+}
+</script>
+</body>
+</html>
