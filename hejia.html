@@ -185,6 +185,7 @@ button:hover{
   <div style="color:#e8c48a;font-size:13px;margin-bottom:8px">请填入你的 API 密钥（只存在本次浏览器，不会上传）</div>
   <input id="keyInput" type="password" placeholder="sk-..." style="width:100%;padding:10px;background:#0f0c09;border:1px solid #8a6a42;border-radius:4px;color:#e0d6c8;font-size:14px;box-sizing:border-box">
   <button style="margin-top:10px" onclick="startGame()">开始</button>
+  <button style="margin-top:10px;margin-left:8px" onclick="if(confirm('确定重开？当前进度会清掉')){localStorage.removeItem('hejia_history');location.reload();}">重开</button>
 </div>
   <div id="story">正在连接…</div>
   <div id="news"></div>
@@ -220,15 +221,19 @@ const 人设规则 = `
 角色说粤语时，格式：呢間我由細食到大，好新鮮㗎。（这家我从小吃到大，很新鲜的。）
 普通话直接输出，不加翻译。只有粤语才加括号翻译。
 
-【输出格式（强制）】
-每次回复必须按以下结构，缺一不可：
+一、每个说话的角色，单独成块，严格按以下格式，一行都不能拆：
 
-一、每个说话的角色，单独成块，格式为：
 **角色名**
-> 粤语内容（普通话翻译）
-\`心理想法\`
+> 粤语原文（普通话翻译）
+`普通话心声`
 
-注意：角色名必须用 **粗体**。台词行必须以 > 开头。心声行必须用反引号包裹，且只写这个角色此刻的心理。
+注意：
+- 角色名必须用 **粗体**
+- 台词必须以 > 开头，粤语和翻译必须写在同一行，不许拆成两行
+- 心声必须用反引号包裹，必须用普通话，必须跟在对应角色台词下面
+- 心声只限何瑞璋、何瑞珩、何瑞延三兄弟有
+- 何鸿谦、何瑞仪等 NPC 只写名字和台词，不许有心声
+- 台词和心声之间不许有空行，不许把翻译单独另起一行
 
 二、所有角色说完后，输出状态代码块，用三个反引号包裹，格式：
 何瑞璋 好感度： / 爱意： / 愤怒： / 性欲： / 理智： / 愉悦： / 恐惧： / 占有欲： / 嫉妒： / 杀意：
@@ -246,6 +251,7 @@ const 人设规则 = `
 - 禁止默认其他角色知道不在场的信息
 - 禁止好感度膨胀
 - 禁止把心声堆在最后，心声必须紧跟对应角色的台词
+- 禁止把台词和翻译拆成两行，禁止把翻译单独另起一行，违反视为严重错误
 【心声规则】
 只有何瑞璋、何瑞珩、何瑞延三兄弟可以有心理想法。
 其他角色（父亲、大姐、其他NPC）一律不显示心声。
@@ -256,6 +262,8 @@ const 人设规则 = `
 `;
 
 let history = [{role:"system", content:人设规则}];
+  const saved = localStorage.getItem("hejia_history");
+if(saved){ try{ history = JSON.parse(saved); }catch(e){} }
 
 async function ask(userText){
   history.push({role:"user", content:userText});
@@ -267,6 +275,7 @@ async function ask(userText){
   const data = await res.json();
   const reply = data.choices[0].message.content;
   history.push({role:"assistant", content:reply});
+  localStorage.setItem("hejia_history", JSON.stringify(history));
   render(reply);
 }
 
@@ -400,6 +409,15 @@ function startGame(){
   if(!k){ alert("请先填密钥"); return; }
   API_KEY=k;
   document.getElementById("keyBox").style.display="none";
+
+  const saved = localStorage.getItem("hejia_history");
+  if(saved && saved.length > 100){
+    try{
+      history = JSON.parse(saved);
+      const last = history[history.length-1];
+      if(last && last.role==="assistant"){ render(last.content); return; }
+    }catch(e){}
+  }
   ask("确认开始。生成大家宴入场场景，我（金隅佟）跟在何鸿谦后面入场。");
 }
 </script>
