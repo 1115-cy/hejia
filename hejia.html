@@ -231,21 +231,12 @@ const 人设规则 = `
 注意：角色名必须用 **粗体**。台词行必须以 > 开头。心声行必须用反引号包裹，且只写这个角色此刻的心理。
 
 二、所有角色说完后，输出状态代码块，用三个反引号包裹，格式：
+何瑞璋 好感度： / 爱意： / 愤怒： / 性欲： / 理智： / 愉悦： / 恐惧： / 占有欲： / 嫉妒： / 杀意：
+何瑞珩 好感度： / 爱意： / 愤怒： / 性欲： / 理智： / 愉悦： / 恐惧： / 占有欲： / 嫉妒： / 杀意：
+何瑞延 好感度： / 爱意： / 愤怒： / 性欲： / 理智： / 愉悦： / 恐惧： / 占有欲： / 嫉妒： / 杀意：
 剧情地点：
 具体日期：
 心情：
-何瑞璋 好感度： / 爱意：
-何瑞珩 好感度： / 爱意：
-何瑞延 好感度： / 爱意：
-何瑞仪 好感度：
-愤怒：
-性欲：
-理智：
-愉悦：
-恐惧：
-占有欲：
-嫉妒：
-杀意：
 
 三、最后给4个选项，格式 A. / B. / C. / D.。
 
@@ -255,7 +246,11 @@ const 人设规则 = `
 - 禁止默认其他角色知道不在场的信息
 - 禁止好感度膨胀
 - 禁止把心声堆在最后，心声必须紧跟对应角色的台词
-
+【心声规则】
+只有何瑞璋、何瑞珩、何瑞延三兄弟可以有心理想法。
+其他角色（父亲、大姐、其他NPC）一律不显示心声。
+心声必须用普通话，不许用粤语。
+心声简短，一行到两行，紧跟对应角色台词下面。
 【当前场景】
 何家每月一次的固定大家宴，何家四姐弟已就坐，玩家跟在何鸿谦后面入场。
 `;
@@ -372,19 +367,18 @@ function render(text){
 function renderStatus(code){
   const row=document.getElementById("statusRow");
   const map={
-    "何瑞璋":{name:"何瑞璋",lines:[]},
-    "何瑞珩":{name:"何瑞珩",lines:[]},
-    "何瑞延":{name:"何瑞延",lines:[]},
-    "何瑞仪":{name:"何瑞仪",lines:[]},
-    "其他":{name:"其 他",lines:[]}
-  };
-  code.split("\n").forEach(l=>{
-    if(l.includes("何瑞璋")) map["何瑞璋"].lines.push(l);
-    else if(l.includes("何瑞珩")) map["何瑞珩"].lines.push(l);
-    else if(l.includes("何瑞延")) map["何瑞延"].lines.push(l);
-    else if(l.includes("何瑞仪")) map["何瑞仪"].lines.push(l);
-    else if(l.trim()) map["其他"].lines.push(l);
-  });
+  "何瑞璋":{name:"何瑞璋",lines:[]},
+  "何瑞珩":{name:"何瑞珩",lines:[]},
+  "何瑞延":{name:"何瑞延",lines:[]}
+};
+
+let current="";
+code.split("\n").forEach(l=>{
+  if(l.includes("何瑞璋")){current="何瑞璋"; map[current].lines.push(l);}
+  else if(l.includes("何瑞珩")){current="何瑞珩"; map[current].lines.push(l);}
+  else if(l.includes("何瑞延")){current="何瑞延"; map[current].lines.push(l);}
+  else if(l.trim()){ if(current) map[current].lines.push(l); }
+});
   let html="";
   Object.values(map).forEach(m=>{
     if(m.lines.length===0) return;
